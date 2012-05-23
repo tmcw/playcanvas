@@ -6,6 +6,7 @@ function playcanvas(canvas) {
   var p = {},
       audio_ctx,
       canvas_ctx,
+      canvas_data,
       processor,
       note_time,
       nindex = 0;
