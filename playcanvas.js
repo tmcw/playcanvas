@@ -102,14 +102,3 @@ function playcanvas(canvas_ctx) {
 
   return p;
 }
-
-
-function playNote(note) {
-    x = 3;
-    y = symbols.indexOf(note);
-    a = Math.pow(2, x);
-    b = Math.pow(1.059463, y);
-    Z = Math.round(275 * a * b) / 10;
-    phaseIncrement = PI2 * Z / sampleRate;
-    soundEnabled = true;
-}
