@@ -30,6 +30,8 @@
       <a href='http://en.wikipedia.org/wiki/Canvas_element'>canvas element</a>
       as audio.</p>
       <p>Requires <code>webkitAudioContext</code></p>
+      <canvas width=500 height=333 id='pie'></canvas>
+      <button id='play_this_pie'>play this pie</button>
       <script src="https://gist.github.com/2777885.js?file=example.js"></script>
       <p><a href='http://macwright.org/'>/tom macwright</a></p>
     </div>
@@ -48,8 +50,18 @@
       titlectx.fillStyle = '#fff';
       titlectx.fillText('playcanvas', -5, 25);
 
-      title_player = playcanvas(titlectx);
+      title_player = playcanvas(title);
       document.getElementById('play_title').onclick = title_player.play;
+
+      var pie = document.getElementById('pie');
+      var piectx = pie.getContext('2d');
+      var pim = new Image();
+      pim.onload = function() {
+        piectx.drawImage(pim, 0, 0, 500, 333);
+        pie_player = playcanvas(pie);
+        document.getElementById('play_this_pie').onclick = pie_player.play;
+      };
+      pim.src = 'pie.jpg';
     </script>
   </body>
 </html>

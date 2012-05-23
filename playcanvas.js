@@ -1,6 +1,4 @@
-
-
-function playcanvas(canvas_ctx) {
+function playcanvas(canvas) {
   if (!window.webkitAudioContext) {
     throw new Exception('webkitAudioContext not available');
   }
@@ -55,17 +53,17 @@ function playcanvas(canvas_ctx) {
   }
 
   function initialize_canvas() {
-    // canvas_ctx = canvas.getContext('2d');
-    canvas_data = canvas_ctx.getImageData(0, 0, 200, 60);
+    canvas_ctx = canvas.getContext('2d');
+    canvas_data = canvas_ctx.getImageData(0, 0, canvas.width, canvas.height);
   }
 
   var canvas_width = 200, canvas_height = 30;
 
   function getpx(data, x, y) {
-     var r = data[4 * ((y * canvas_width) + x) + 0],
-         g = data[4 * ((y * canvas_width) + x) + 1],
-         b = data[4 * ((y * canvas_width) + x) + 2],
-         a = data[4 * ((y * canvas_width) + x) + 3];
+     var r = data[4 * ((y * canvas.width) + x) + 0],
+         g = data[4 * ((y * canvas.width) + x) + 1],
+         b = data[4 * ((y * canvas.width) + x) + 2],
+         a = data[4 * ((y * canvas.width) + x) + 3];
     return [r, g, b, a];
   }
 
@@ -82,11 +80,11 @@ function playcanvas(canvas_ctx) {
 
   function play_note() {
     soundEnabled = true;
-    var px = getpx(canvas_data.data, nindex % canvas_width, Math.floor(nindex / canvas_width));
-    flippx(canvas_ctx, canvas_data.data, nindex % canvas_width, Math.floor(nindex / canvas_width));
+    var px = getpx(canvas_data.data, nindex % canvas.width, Math.floor(nindex / canvas.width));
+    flippx(canvas_ctx, canvas_data.data, nindex % canvas.width, Math.floor(nindex / canvas.width));
     phaseIncrement = PI2 * (px[0] + px[1] + px[2]) / sampleRate;
     nindex++;
-    if (nindex < (canvas_width * canvas_height)) {
+    if (nindex < (canvas.width * canvas.height)) {
       note_time = window.setTimeout(play_note, 0);
     } else {
       soundEnabled = false;
