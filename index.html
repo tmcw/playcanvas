@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>playcanvas</title>
+    <style>
+      body {
+        font:14px/20px 'Verdana', sans-serif;
+        background:#000;
+      }
+      a {
+        color:#a2a;
+      }
+      a:hover {
+        background:#fea;
+      }
+      .wrapper {
+        background:#fff;
+        width:500px;
+        padding:20px;
+        margin:10px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='wrapper'>
+      <canvas width=200 height=30 id='title'></canvas>
+      <br />
+      <button id='play_title'>play the title</button>
+      <p><code>playcanvas</code> lets you play any
+      <a href='http://en.wikipedia.org/wiki/Canvas_element'>canvas element</a>
+      as audio.</p>
+      <p>Requires <code>webkitAudioContext</code></p>
+      <script src="https://gist.github.com/2777885.js?file=example.js"></script>
+      <p><a href='http://macwright.org/'>/tom macwright</a></p>
+    </div>
+    <script src='playcanvas.js'></script>
+    <script>
+      var title = document.getElementById('title');
+      var titlectx = title.getContext('2d');
+
+      titlectx.font = '40px Helvetica';
+      titlectx.fillStyle = '#ace';
+      titlectx.fillRect(0, 0, 200, 30);
+      titlectx.fillStyle = '#888';
+      titlectx.fillRect(100, 0, 100, 30);
+      titlectx.fillStyle = '#1aa';
+      titlectx.fillRect(150, 0, 50, 30);
+      titlectx.fillStyle = '#fff';
+      titlectx.fillText('playcanvas', -5, 25);
+
+      title_player = playcanvas(titlectx);
+      document.getElementById('play_title').onclick = title_player.play;
+    </script>
+  </body>
+</html>
