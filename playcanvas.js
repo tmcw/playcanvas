@@ -12,40 +12,38 @@ function playcanvas(canvas) {
         repeat = false,
         nindex = 0;
 
-    var PI2 = Math.PI * 2,
-        phase = 0.0,
+    var phase = 0.0,
         baseFrequency = 440.0,
         sampleRate = 44100.0,
-        bufferSize = 2048, // must be power of 2
-        phaseIncrement = PI2 * baseFrequency / sampleRate,
-        ctx,
+        // must be power of 2
+        bufferSize = 2048,
+        phaseIncrement,
         jsProcessor,
-        style = 'scan',
         soundEnabled = false;
 
     // This function will be called repeatedly to fill an audio buffer and
     // generate sound.
     function process(event) {
         // Get array associated with the output port.
-        var outputArray = event.outputBuffer.getChannelData(0);
-        var n = outputArray.length;
+        var output = event.outputBuffer.getChannelData(0),
+            n = output.length;
         var i;
 
         if (soundEnabled) {
             for (i = 0; i < n; ++i) {
                 // Generate a sine wave.
                 var sample = Math.sin(phase);
-                outputArray[i] = sample * 0.6;
+                output[i] = sample * 0.6;
                 // Increment and wrap phase.
                 phase += phaseIncrement;
-                if (phase > PI2) {
-                    phase -= PI2;
+                if (phase > Math.PI * 2) {
+                    phase -= Math.PI * 2;
                 }
             }
         } else {
             // Output silence.
             for (i = 0; i < n; ++i) {
-                outputArray[i] = 0.0;
+                output[i] = 0.0;
             }
         }
     }
@@ -53,7 +51,7 @@ function playcanvas(canvas) {
     // Create a new audio context. This should be called only once.
     function initialize_audio() {
         audio_ctx = new webkitAudioContext(),
-        processor = audio_ctx.createJavaScriptNode(2048, 0, 1);
+        processor = audio_ctx.createJavaScriptNode(bufferSize, 0, 1);
         processor.onaudioprocess = process;
         processor.connect(audio_ctx.destination);
     }
@@ -84,7 +82,7 @@ function playcanvas(canvas) {
 
     function play_note() {
         soundEnabled = true;
-        phaseIncrement = PI2 * styles[style].freqat(nindex) / sampleRate;
+        p.set_tone(styles[style].freqat(nindex));
         nindex++;
         if (nindex < styles[style].n_notes()) {
             note_time = window.setTimeout(play_note, 0);
@@ -94,8 +92,8 @@ function playcanvas(canvas) {
         } else {
           console.log('done');
             // Stop any audio output
-            soundEnabled = false;
             // Rewind to the beginning.
+            soundEnabled = false;
             nindex = 0;
         }
     }
@@ -127,11 +125,14 @@ function playcanvas(canvas) {
         }
     };
 
+    p.set_tone = function(n) {
+        phaseIncrement = Math.PI * 2 * n  / sampleRate;
+        return p;
+    };
+
     // set a style-specific parameter
     p.style_param = function(k, x) {
-        if (!arguments.length) {
-          return style_params[k];
-        }
+        if (!arguments.length) return style_params[k];
         style_params[k] = x;
         return p;
     };
@@ -182,6 +183,8 @@ function playcanvas(canvas) {
 
     initialize_audio();
     initialize_canvas();
+
+    p.style('scan');
 
     return p;
 }
