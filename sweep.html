@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>playcanvas</title>
+    <style>
+      body {
+        font:14px/20px 'Verdana', sans-serif;
+      }
+      a {
+        color:#a2a;
+      }
+      a:hover {
+        background:#fea;
+      }
+      #piano_roll {
+        border:1px solid #000;
+      }
+      .wrapper {
+        position:absolute;
+        bottom:0;
+        right:0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width=900 height=450 id='piano_roll'></canvas>
+    <div class='wrapper'>
+      <label for='quant'>quantize</label>
+      <input type='range' id='quant' min=1 max=80 />
+      <br />
+      <button id='play'>play</button>
+    </div>
+    <script src='playcanvas.js'></script>
+    <script>
+      var piano_roll = document.getElementById('piano_roll');
+      piano_ctx = piano_roll.getContext('2d');
+      piano_ctx.fillStyle = '#fff';
+      piano_ctx.fillRect(0, 0, piano_roll.width, piano_roll.height);
+      piano_ctx.fillStyle = 'rgb(255, 27, 27)';
+      piano_player = playcanvas(piano_roll).style('sweep'); // .repeat(true);
+
+      var down = false;
+      document.body.onmousedown = function() { down = true; }
+      document.body.onmouseup = function() { down = false; }
+
+      function quantize(e) {
+        return [
+          Math.floor(e.offsetX / q) * q,
+          Math.floor(e.offsetY / q) * q];
+      }
+
+      var q = 10;
+
+      document.getElementById('quant').onchange = function() {
+        q = parseInt(this.value);
+      };
+
+      piano_roll.onmousemove = piano_roll.onmousedown = function(e) {
+        if (!down) return;
+        piano_ctx.clearRect(quantize(e)[0], 0, q, piano_roll.height);
+        piano_ctx.fillRect(quantize(e)[0], quantize(e)[1], q, q);
+        piano_player.update(piano_ctx);
+      }
+
+      document.getElementById('play').onclick = piano_player.play;
+    </script>
+  </body>
+</html>

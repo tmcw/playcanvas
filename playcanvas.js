@@ -1,6 +1,6 @@
 function playcanvas(canvas) {
     if (!window.webkitAudioContext) {
-        throw new Exception('webkitAudioContext not available');
+        throw 'webkitAudioContext not available';
     }
 
     var p = {},
@@ -9,6 +9,7 @@ function playcanvas(canvas) {
         canvas_data,
         processor,
         note_time,
+        repeat = false,
         nindex = 0;
 
     var PI2 = Math.PI * 2,
@@ -17,7 +18,9 @@ function playcanvas(canvas) {
         sampleRate = 44100.0,
         bufferSize = 2048, // must be power of 2
         phaseIncrement = PI2 * baseFrequency / sampleRate,
-        ctx, jsProcessor,
+        ctx,
+        jsProcessor,
+        style = 'scan',
         soundEnabled = false;
 
     // This function will be called repeatedly to fill an audio buffer and
@@ -63,10 +66,9 @@ function playcanvas(canvas) {
 
     function getpx(data, x, y) {
         var r = data[4 * ((y * canvas.width) + x) + 0],
-        g = data[4 * ((y * canvas.width) + x) + 1],
-        b = data[4 * ((y * canvas.width) + x) + 2],
-        a = data[4 * ((y * canvas.width) + x) + 3];
-        return [r, g, b, a];
+            g = data[4 * ((y * canvas.width) + x) + 1],
+            b = data[4 * ((y * canvas.width) + x) + 2];
+        return [r, g, b];
     }
 
     var flippedpx;
@@ -82,22 +84,81 @@ function playcanvas(canvas) {
 
     function play_note() {
         soundEnabled = true;
-        var px = getpx(canvas_data.data, nindex % canvas.width, Math.floor(nindex / canvas.width));
-        flippx(canvas_ctx,
-            canvas_data.data,
-            nindex % canvas.width,
-            Math.floor(nindex / canvas.width));
-        phaseIncrement = PI2 * (px[0] + px[1] + px[2]) / sampleRate;
+        phaseIncrement = PI2 * styles[style].freqat(nindex) / sampleRate;
         nindex++;
-        if (nindex < (canvas.width * canvas.height)) {
+        if (nindex < styles[style].n_notes()) {
+            note_time = window.setTimeout(play_note, 0);
+        } else if (repeat) {
+            nindex = 0;
             note_time = window.setTimeout(play_note, 0);
         } else {
+          console.log('done');
             // Stop any audio output
             soundEnabled = false;
             // Rewind to the beginning.
             nindex = 0;
         }
     }
+
+    var styles = {}, style_params;
+
+    styles.scan = {
+        n_notes: function() {
+            return canvas.width * canvas.height;
+        },
+        freqat: function(n) {
+            var px = getpx(canvas_data.data, nindex % canvas.width, Math.floor(nindex / canvas.width));
+            return (px[0] + px[1] + px[2]);
+        }
+    };
+
+    styles.sweep = {
+        n_notes: function() {
+            return canvas.width;
+        },
+        freqat: function(n) {
+            for (var y = 0; y < canvas.height; y++) {
+              var px = getpx(canvas_data.data, n, y);
+              if (px[1] !== 0) {
+                return canvas.height - y;
+              }
+            }
+            return 0;
+        }
+    };
+
+    // set a style-specific parameter
+    p.style_param = function(k, x) {
+        if (!arguments.length) {
+          return style_params[k];
+        }
+        style_params[k] = x;
+        return p;
+    };
+
+    p.repeat = function(x) {
+        if (!arguments.length) return repeat;
+        repeat = x;
+        return p;
+    };
+
+    p.update = function(x) {
+        canvas_ctx = x;
+        canvas_data = canvas_ctx.getImageData(0, 0, canvas.width, canvas.height);
+        return p;
+    };
+
+    p.style = function(x) {
+        if (!arguments.length) return style;
+        if (typeof x == 'string') {
+          if (!styles[x]) throw 'style ' + x + ' not found';
+          style = x;
+        } else {
+          styles._user = x;
+          style = '_user';
+        }
+        return p;
+    };
 
     // Play a note
     p.play = function() {
@@ -113,6 +174,10 @@ function playcanvas(canvas) {
     p.stop = function() {
         p.pause();
         nindex = 0;
+    };
+
+    p.n_notes = function() {
+        return styles[style].notes();
     };
 
     initialize_audio();
