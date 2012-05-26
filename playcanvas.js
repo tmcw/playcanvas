@@ -1,18 +1,8 @@
-function playcanvas(canvas) {
-    if (!window.webkitAudioContext) {
-        throw 'webkitAudioContext not available';
-    }
-
-    var p = {},
+function playsynth() {
+    var s = {},
         audio_ctx,
         canvas_ctx,
-        canvas_data,
-        processor,
-        note_time,
-        repeat = false,
-        nindex = 0;
-
-    var phase = 0.0,
+        phase = 0.0,
         baseFrequency = 440.0,
         sampleRate = 44100.0,
         // must be power of 2
@@ -21,12 +11,14 @@ function playcanvas(canvas) {
         jsProcessor,
         soundEnabled = false;
 
+
     // This function will be called repeatedly to fill an audio buffer and
     // generate sound.
     function process(event) {
         // Get array associated with the output port.
         var output = event.outputBuffer.getChannelData(0),
             n = output.length;
+
         var i;
 
         if (soundEnabled) {
@@ -47,7 +39,6 @@ function playcanvas(canvas) {
             }
         }
     }
-
     // Create a new audio context. This should be called only once.
     function initialize_audio() {
         audio_ctx = new webkitAudioContext(),
@@ -55,6 +46,19 @@ function playcanvas(canvas) {
         processor.onaudioprocess = process;
         processor.connect(audio_ctx.destination);
     }
+
+    return s;
+}
+
+function playcanvas(canvas) {
+    if (!window.webkitAudioContext) { throw 'webkitAudioContext not available'; }
+
+    var p = {},
+        canvas_data,
+        processor,
+        note_time,
+        repeat = false,
+        nindex = 0;
 
     // Create a new canvas context. This should be called only once.
     function initialize_canvas() {
